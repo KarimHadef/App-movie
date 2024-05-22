@@ -1,16 +1,12 @@
+import { useState, useEffect } from "react";
 
-import React, { useState, useEffect } from "react";
-
-// setting the api link
-export const API_URL = `https: //www.omdbapi.com/?&apikey=${process.env.REACT_APP_MOVIE_KEY}`;
-/* plz subsribe to thapa technical channel 
-          https://www.youtube.com/thapatechnical
-         */
+// Setting the API link
+const API_URL = `https://www.omdbapi.com/?apikey=${process.env.REACT_APP_API_KEY}`;
 
 const useFetch = (apiParams) => {
   const [isLoading, setIsLoading] = useState(true);
-  const [isError, setIsError] = useState({ show: "false", msg: "" });
-  const [movie, setMovie] = useState(null);
+  const [isError, setIsError] = useState({ show: false, msg: "" });
+  const [movie, setMovie] = useState({});
 
   const getMovie = async (url) => {
     setIsLoading(true);
@@ -21,20 +17,22 @@ const useFetch = (apiParams) => {
       console.log(data);
       if (data.Response === "True") {
         setIsLoading(false);
-        setMovie(data.Search || data);
-        setIsError({ show: "false", msg: "" });
+        setMovie(data);
+        setIsError({ show: false, msg: "" });
       } else {
-        setIsError({ show: "true", msg: data.Error });
+        setIsLoading(false);
+        setIsError({ show: true, msg: data.Error });
       }
     } catch (error) {
       console.log(error);
+      setIsLoading(false);
+      setIsError({ show: true, msg: "Something went wrong" });
     }
   };
 
-  // debouncing in react js
   useEffect(() => {
     let timeOut = setTimeout(() => {
-      getMovie(`${API_URL}&s=${apiParams}`);
+      getMovie(`${API_URL}${apiParams}`);
     }, 1000);
     console.log("set");
     return () => {
