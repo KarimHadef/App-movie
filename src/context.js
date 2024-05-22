@@ -1,45 +1,49 @@
 import React, { useContext, useEffect, useState } from "react";
-import useFetch from "./useFetch";
-
 
 const AppContext = React.createContext();
-const API_URL = `https://www.omdbapi.com/?apikey=b43a1da6&s=titanic`;
+const API_URL = `https://www.omdbapi.com/?apikey=${process.env.REACT_APP_API_KEY}`;
 
 const AppProvider = ({ children }) => {
-const [isLoading , setIsLoading] = useState(true);
-const [movie,setMovie]=useState([]);
-const [isError,setIsError] = useState ({show: "false",msg:""});
+  const [isLoading, setIsLoading] = useState(true);
+  const [movie, setMovie] = useState([]);
+  const [isError, setIsError] = useState({ show: false, msg: "" });
+  const [query, setQuery] = useState("titanic");
 
- const getMovies = async(url)=>{
-  try{
-const res = await fetch(url);
-const data = await res.json();
-console.log(data);
-if(data.Response === "True"){
-  setIsLoading()
-  setMovie(data.Search);
-}else { setIsError({
-  show:true,
-  msg:data.error,
-});}
-  }catch(error){
-  console.log(error);
-  }
-};
+  const getMovies = async (url) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      console.log(data);
+      if (data.Response === "True") {
+        setIsLoading(false);
+        setMovie(data.Search);
+      } else {
+        setIsLoading(false);
+        setIsError({
+          show: true,
+          msg: data.Error,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      setIsLoading(false);
+      setIsError({
+        show: true,
+        msg: "Something went wrong",
+      });
+    }
+  };
 
-useEffect(()=>{
-  getMovies(API_URL);
-},[]);
-
-
-  // const [query, setQuery] = useState("hacker");
-  // const { isLoading, isError, movie } = useFetch(`&s=${query}`);
+  useEffect(() => {
+    getMovies(`${API_URL}&s=${query}`);
+  }, [query]);
 
   return (
- <AppContext.Provider value={{ movie, isLoading, isError }}>
-   {children}
-  </AppContext.Provider>
-   );
+    <AppContext.Provider value={{ query, setQuery, movie, isLoading, isError }}>
+      {children}
+    </AppContext.Provider>
+  );
 };
 
 const useGlobalContext = () => {
